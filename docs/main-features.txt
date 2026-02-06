@@ -1,0 +1,15 @@
+
+- log in            -> google, phone number, other social media
+
+- posting listing   -> rent / sell
+
+- finding listing   -> rent / buy
+
+- finish deal       ->
+
+- payment gateway   ->
+
+- advertisements    ->
+
+- AI integrations   ->
+

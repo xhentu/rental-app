@@ -1,0 +1,14 @@
+front-end           -> react-native/flutter
+
+back-end            -> Django/FastAPI/nodeJS
+
+Auth                -> Firebase or something in backend
+
+database            -> posgreSQL
+
+front-end hosting   -> mainly mobile and website later
+
+back-end hosting    -> render to GCP/IBM
+
+database-hosting    -> postGIS or render to later GCP/IBM
+
