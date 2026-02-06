@@ -3,13 +3,19 @@
 
 - posting listing   -> rent / sell
 
+- map               -> google map/ map-box
+
 - finding listing   -> rent / buy
+
+- chat              -> later / but not too early
 
 - finish deal       ->
 
 - payment gateway   ->
 
-- advertisements    ->
+- discuss legal contracts   -> build trust upon application
 
-- AI integrations   ->
+- advertisements    -> later
+
+- AI integrations   -> later
 

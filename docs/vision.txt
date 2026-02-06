@@ -1,4 +1,9 @@
 
 1. To make money ( Create Business )
 2. To help people find and post rents/selling/buying houses easily
-3. To block local brokers
+3. To block local brokers -> seller and buyer/tenents join directly
+
+Names
+NoBroker - existed in india
+Rental
+DigitalBroker

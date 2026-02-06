@@ -12,3 +12,48 @@ back-end hosting    -> render to GCP/IBM
 
 database-hosting    -> postGIS or render to later GCP/IBM
 
+
+to write backend code for home rental/broker application which one might be the best or 
+tell me about pros and cons of those 3 main languages. Django/FastAPI/nodeJS 
+so i want you to tell me about those 3 main languages in very much detail and your feedback
+should be mainly about backend,
+we are aiming to get those things as features (still discussing)
+- log in            -> google, phone number, other social media
+
+- posting listing   -> rent / sell
+
+- map               -> google map/ map-box
+
+- finding listing   -> rent / buy
+
+- finish deal       -> both party need to tick that finish button or something
+
+- payment gateway   -> wallets/mbankings (kbzpay/ayapay/wavepay)
+
+- discuss legal contracts   -> build trust upon application
+
+- advertisements    -> later
+
+- AI integrations   -> later
+
+and tech stacks are about (also discussing)
+
+front-end           -> react-native/flutter
+
+back-end            -> Django/FastAPI/nodeJS
+
+Auth                -> Firebase or something integrated in backend
+
+database            -> posgreSQL
+
+img storage         -> ibm s3 or neon tech 
+
+front-end hosting   -> mainly mobile and website later
+
+back-end hosting    -> render to GCP/IBM
+
+database-hosting    -> postGIS or render to later GCP/IBM
+
+we want low cost for startup and migrate to stable and more reliable hosting platforms like 
+GCP or IBM. what do you think?
+
