@@ -79,7 +79,11 @@ DATABASES = {
     }
 }
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'firebase_auth.FirebaseAuthentication',
+    ],
+}
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -115,3 +119,33 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+from pathlib import Path
+import firebase_admin
+from firebase_admin import credentials
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Firebase Setup
+FIREBASE_KEY_PATH = BASE_DIR / "serviceAccountKey.json"
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate(str(FIREBASE_KEY_PATH))
+    firebase_admin.initialize_app(cred)
+
+# Celery Settings
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+import firebase_admin
+from firebase_admin import credentials
+import os
+
+# Path to your service account key
+CERT_PATH = os.path.join(BASE_DIR, 'serviceAccountKey.json')
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate(CERT_PATH)
+    firebase_admin.initialize_app(cred)
