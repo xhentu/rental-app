@@ -37,6 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Third Party
+    'rest_framework',
+    'django_celery_results',
+    
+    # Your Apps
+    'listings',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -149,3 +157,10 @@ CERT_PATH = os.path.join(BASE_DIR, 'serviceAccountKey.json')
 if not firebase_admin._apps:
     cred = credentials.Certificate(CERT_PATH)
     firebase_admin.initialize_app(cred)
+
+# --- Celery Configuration ---
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'  # Stores results in your DB
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC' # Or your local timezone

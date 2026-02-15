@@ -1,0 +1,26 @@
+The_project/ (Root Git Repo)
+├── frontend/        <-- Your Flutter project
+└── backend/                 <-- Your Django project root
+    ├── .gitignore           <-- ( i prefer diff gitignore for backend and frontend cause frontend is flutter and backend is django )
+    ├── manage.py            <-- Django's entry point
+    ├── .venv/               <-- Your Python 3.12 virtual environment
+    ├── .python-version      <-- Created by pyenv (set to 3.12.0)
+    ├── serviceAccountKey.json <-- KEY GOES HERE (Next to manage.py)
+    │
+    ├── backend/             <-- i accidentally name it just backend, so lets go with it
+    │   ├── __init__.py      <-- Setup Celery here (see below)
+    │   ├── settings.py      <-- Firebase & Celery settings live here
+    │   ├── urls.py          <-- Main routing
+    │   ├── celery.py        <-- Celery instance definition
+    │   └── wsgi.py
+    │
+    ├── listings/            <-- Your Property App
+    │   ├── models.py        <-- Property/House models
+    │   ├── serializers.py   <-- For the Handshake with Flutter
+    │   ├── tasks.py         <-- YOUR CELERY TASKS GO HERE
+    │   └── views.py
+    │
+    └── users/               <-- Custom User/Auth App (Optional but recommended)
+        └── firebase_auth.py <-- The Handshake Logic
+
+    so, we need to start two apps and add in settings.py, that's ok
