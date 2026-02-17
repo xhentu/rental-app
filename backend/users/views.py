@@ -7,45 +7,47 @@ from firebase_admin import auth
 User = get_user_model()
 
 class FirebaseSyncView(APIView):
+    # This view doesn't require DRF login because it IS the login
+    permission_classes = [] 
+
     def post(self, request):
         token = request.data.get('idToken')
-        
+        # Custom data from mobile app form (only used on first signup)
+        chosen_first_name = request.data.get('first_name', '')
+        chosen_last_name = request.data.get('last_name', '')
+
         try:
-            # 1. Verify the token with Firebase Admin SDK
+            from firebase_admin import auth
             decoded_token = auth.verify_id_token(token)
             uid = decoded_token.get('uid')
-            email = decoded_token.get('email')
             
-            # 2. Extract Names (Handles Google Sign-in naming)
-            full_name = decoded_token.get('name', '')
-            name_parts = full_name.split(' ', 1)
-            first_name = name_parts[0] if len(name_parts) > 0 else ""
-            last_name = name_parts[1] if len(name_parts) > 1 else ""
+            # Firebase gives us these depending on login method
+            email = decoded_token.get('email')
+            phone = decoded_token.get('phone_number')
+            photo = decoded_token.get('picture')
 
-            # 3. Get or Create the user record
+            # Create or get user
             user, created = User.objects.get_or_create(
                 firebase_uid=uid,
                 defaults={
                     'email': email,
-                    'username': email if email else uid,
-                    'first_name': first_name,
-                    'last_name': last_name,
+                    'phone_number': phone,
+                    'profile_picture': photo,
+                    'first_name': chosen_first_name,
+                    'last_name': chosen_last_name,
                 }
             )
 
-            # 4. Optional: Update names if they changed since last login
+            # If user already existed, update their profile photo/email in case it changed
             if not created:
-                user.first_name = first_name
-                user.last_name = last_name
+                user.profile_picture = photo or user.profile_picture
                 user.save()
 
             return Response({
-                "message": "User Created" if created else "User Logged In",
-                "user_id": user.id,
-                "email": user.email,
-                "first_name": user.first_name
+                "status": "success",
+                "is_new_user": created,
+                "user_id": user.id
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            print(f"❌ Handshake error: {e}")
-            return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": str(e)}, status=401)
