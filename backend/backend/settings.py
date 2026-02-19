@@ -90,8 +90,15 @@ DATABASES = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'users.firebase_auth.FirebaseAuthentication',
+        'rest_framework.authentication.SessionAuthentication', # For Browser UI
+
     ],
 }
+
+AUTHENTICATION_BACKENDS = [
+    # This allows you to log in with a password in /admin
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

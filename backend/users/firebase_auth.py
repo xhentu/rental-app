@@ -24,7 +24,12 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
         user = User.objects.filter(firebase_uid=uid).first()
 
         # 3. Security Check: Banned users get kicked out immediately
-        if user and user.is_banned:
+        if not user:
+            # Tell the frontend: "Token is good, but you haven't synced with Django yet!"
+            raise exceptions.AuthenticationFailed('User not synced')
+
+        # 4. banned user case
+        if user.is_banned:
             raise exceptions.PermissionDenied(f"Account Banned: {user.ban_reason}")
 
         # Return user if found, or None if they need to sync/sign-up
