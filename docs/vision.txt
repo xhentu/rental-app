@@ -2,6 +2,8 @@
 1. To make money ( Create Business )
 2. To help people find and post rents/selling/buying houses easily
 3. To block local brokers -> seller and buyer/tenents join directly
+4. To become a specialized app for real estate sell/rent
+
 
 Names
 NoBroker - existed in india
