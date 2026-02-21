@@ -1,0 +1,7 @@
+To be 100% "Enterprise" ready, you'd eventually add these (but not now):
+
+    Logging: Using a library to track when users sign up/login for security audits.
+
+    Rate Limiting: Using Django Rest Framework to prevent someone from hitting your /login/ endpoint 10,000 times a minute.
+
+    Permissions: Ensuring only the owner of a listing can edit it (which we will do in the Listings app).

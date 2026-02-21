@@ -7,51 +7,53 @@ if not firebase_admin._apps:
     cred = credentials.Certificate("serviceAccountKey.json")
     firebase_admin.initialize_app(cred)
 
-def get_test_token(uid="test-user-123"):
-    print(f"--- Generating Token for UID: {uid} ---")
+def get_complete_token(uid="pro-landlord-777"):
+    # Add claims to mimic a real Google profile with a phone number
+    developer_claims = {
+        'phone_number': '+959123456789',
+        'picture': 'https://ui-avatars.com/api/?name=Hein+Chanthu&background=random'
+    }
     
-    # Generate the custom token
-    custom_token_bytes = auth.create_custom_token(uid)
-    custom_token_str = custom_token_bytes.decode('utf-8')
+    # Generate the custom token with the claims
+    custom_token = auth.create_custom_token(uid, developer_claims).decode('utf-8')
     
-    # ⚠️ IMPORTANT: Verify this key in Firebase Console > Project Settings
+    # Exchange for ID Token
     API_KEY = "AIzaSyAYAQBgcqi9gIipwowmFQGrKG2LJbznaq0" 
     url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key={API_KEY}"
     
-    res = requests.post(url, json={"token": custom_token_str, "returnSecureToken": True})
+    res = requests.post(url, json={"token": custom_token, "returnSecureToken": True})
     
-    # Check for errors before trying to access ['idToken']
     if res.status_code != 200:
-        error_data = res.json()
-        error_msg = error_data.get('error', {}).get('message', 'Unknown Error')
-        print(f"❌ Google API Error: {error_msg}")
-        
-        if error_msg == "IDENTITY_TOOLKIT_DISABLED":
-            print("👉 Fix: Enable 'Identity Toolkit API' in Google Cloud Console.")
-        elif error_msg == "INVALID_API_KEY":
-            print("👉 Fix: Check your Web API Key in Firebase Settings.")
-            
-        raise Exception(f"Firebase Exchange Failed: {error_msg}")
+        raise Exception(f"Firebase Exchange Failed: {res.json()}")
         
     return res.json()['idToken']
-    
-def test_django_sync(token):
-    print("--- Sending to Django ---")
+
+def sync_to_django(token):
+    print("--- 🚀 Syncing Complete Profile to Django ---")
     url = "http://127.0.0.1:8000/api/users/sync/"
-    # Note: We match the key 'idToken' expected by your FirebaseSyncView
-    payload = {"idToken": token}
     
-    try:
-        response = requests.post(url, json=payload)
-        print(f"Django Status: {response.status_code}")
-        print(f"Django Response: {response.json()}")
-    except requests.exceptions.ConnectionError:
-        print("❌ Error: Is your Django server running? (python manage.py runserver)")
+    payload = {
+        "idToken": token,
+        "first_name": "Hein",
+        "last_name": "Chanthu"
+    }
+    
+    response = requests.post(url, json=payload)
+    
+    if response.status_code == 200:
+        data = response.json()
+        user = data['user']
+        print(f"✅ Success! User ID: {user['id']}")
+        print(f"📧 Email: {user['email']}")
+        print(f"📱 Phone: {user['phone_number']}")
+        print(f"⏰ Last Login: {user.get('last_login')}")
+    else:
+        print(f"❌ Failed: {response.status_code}")
+        print(response.text)
 
 if __name__ == "__main__":
     try:
-        token = get_test_token()
-        print("✅ Success! Token obtained.")
-        test_django_sync(token)
+        token = get_complete_token()
+        sync_to_django(token)
     except Exception as e:
-        print(f"💥 Script Stopped: {e}")
+        print(f"💥 Error: {e}")

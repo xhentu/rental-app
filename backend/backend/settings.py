@@ -124,7 +124,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Yangon'
 
 USE_I18N = True
 
@@ -136,47 +136,40 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Firebae import
-from pathlib import Path
+# --- Firebase Setup ---
+import os
 import firebase_admin
 from firebase_admin import credentials
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Firebase Setu
 FIREBASE_KEY_PATH = BASE_DIR / "serviceAccountKey.json"
 
 if not firebase_admin._apps:
     try:
         cred = credentials.Certificate(str(FIREBASE_KEY_PATH))
         firebase_admin.initialize_app(cred)
-        print("✅ [FIREBASE] Admin SDK initialized successfully.")
+        # Only print if we are in the main worker process
+        if os.environ.get('RUN_MAIN') == 'true':
+            print("✅ [FIREBASE] Admin SDK initialized successfully.")
     except Exception as e:
         print(f"❌ [FIREBASE] Initialization failed: {e}")
 
-# Celery Settings
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-
-import firebase_admin
-from firebase_admin import credentials
-import os
-
-# Path to your service account key
-CERT_PATH = os.path.join(BASE_DIR, 'serviceAccountKey.json')
-
-if not firebase_admin._apps:
-    cred = credentials.Certificate(CERT_PATH)
-    firebase_admin.initialize_app(cred)
-
 # --- Celery Configuration ---
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'django-db'  # Stores results in your DB
+CELERY_RESULT_BACKEND = 'django-db'  # Keeps results in your Django DB tables
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC' # Or your local timezone
+CELERY_TIMEZONE = 'UTC'
 
-# user choice
+# --- Custom User Model ---
 AUTH_USER_MODEL = 'users.User'
+
+# --- Django Cache (Using Redis Database 1) ---
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
