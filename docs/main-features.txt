@@ -9,11 +9,20 @@
 
 - chat              -> later / but not too early
 
-- finish deal       ->
+- social media buttons -> on published 
 
-- payment gateway   ->
+- finish deal       -> must
 
-- discuss legal contracts   -> build trust upon application
+- payment gateway   -> must kbzpay,wavepay,ayapay,mmqr
+
+- verification system -> personal on site verification with extra charges 
+
+- search on paid -> in discussion list
+
+
+- installment for buy even rent -> bank trust 
+
+- discuss legal contracts   -> build trust upon application / lawyer fees
 
 - advertisements    -> later
 
