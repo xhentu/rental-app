@@ -39,8 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Third Party
+    'django.contrib.postgres',
     'rest_framework',
     'django_celery_results',
+    'django_celery_beat',
     
     # Your Apps
     'listings',
@@ -80,10 +82,21 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'rental_db',
+        'USER': 'xhentu',
+        'PASSWORD': 'xhentu', # The password you just set in psql
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
@@ -159,6 +172,15 @@ CELERY_RESULT_BACKEND = 'django-db'  # Keeps results in your Django DB tables
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'deactivate-listings-at-midnight': {
+        'task': 'listings.tasks.auto_deactivate_expired_listings',
+        'schedule': crontab(hour=0, minute=0), # Runs at 00:00 every day
+    },
+}
 
 # --- Custom User Model ---
 AUTH_USER_MODEL = 'users.User'
