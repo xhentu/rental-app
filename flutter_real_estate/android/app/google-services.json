@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "740978201231",
+    "project_id": "rental-fb385",
+    "storage_bucket": "rental-fb385.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:740978201231:android:2a1eed6446d0f88bae96fa",
+        "android_client_info": {
+          "package_name": "com.example.real_estate_mm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "740978201231-8gmracktjfh2pru8ump1ls0t144652rj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxlbOM980z-Mkojgj_kSDqinMESX2SepA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "740978201231-8gmracktjfh2pru8ump1ls0t144652rj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

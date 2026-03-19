@@ -26,6 +26,7 @@ class FirebaseBaseView(APIView):
             return None, Response({"error": str(e)}, status=401)
             
 class RegisterView(FirebaseBaseView):
+    authentication_classes = []
     def post(self, request):
         decoded_token, error_response = self.verify_firebase_token(request)
         if error_response: return error_response
