@@ -4,20 +4,22 @@ from .models import User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    # We use the 'display_name' property we defined in the Model
-    list_display = ('firebase_uid', 'email', 'display_name', 'is_verified_landlord', 'is_banned', 'last_login')
+    # 1. Update list_display: replaced display_name with full_name for clarity
+    list_display = ('firebase_uid', 'email', 'full_name', 'is_verified_landlord', 'is_banned', 'last_login')
     list_filter = ('is_verified_landlord', 'is_banned', 'is_staff', 'date_joined')
-    search_fields = ('email', 'phone_number', 'firebase_uid', 'first_name', 'last_name')
+    
+    # 2. Update search_fields: removed first_name and last_name
+    search_fields = ('email', 'phone_number', 'firebase_uid', 'full_name')
     ordering = ('-date_joined',)
 
-    # Organizes the detail page into clear sections
+    # 3. Update fieldsets: this is where the layout of the "Edit User" page is defined
     fieldsets = (
         ('System Anchor', {
             'fields': ('firebase_uid', 'password'),
             'description': 'Unique identifier from Firebase and internal Django hash.'
         }),
         ('Contact Info', {'fields': ('email', 'phone_number')}),
-        ('Profile', {'fields': ('first_name', 'last_name', 'profile_picture', 'settings')}),
+        ('Profile', {'fields': ('full_name', 'profile_picture', 'settings')}), # ✅ Swapped here
         ('Status & Verification', {
             'fields': ('is_verified_landlord', 'is_banned', 'ban_reason'),
         }),
@@ -30,10 +32,9 @@ class CustomUserAdmin(UserAdmin):
         }),
     )
 
-    # These fields cannot be edited in the UI
+    # 4. Read-only fields remain the same
     readonly_fields = ('firebase_uid', 'last_login', 'date_joined')
 
-    # This makes the "settings" JSON look a bit better in the admin
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         if 'settings' in form.base_fields:

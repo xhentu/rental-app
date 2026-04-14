@@ -40,6 +40,8 @@ packaging==26.0
 prompt_toolkit==3.0.52
 proto-plus==1.27.1
 protobuf==6.33.5
+psycopg==3.3.3
+psycopg-binary==3.3.3
 pyasn1==0.6.2
 pyasn1_modules==0.4.2
 pycparser==3.0
