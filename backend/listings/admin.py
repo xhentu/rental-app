@@ -1,56 +1,80 @@
 from django.contrib import admin
-from django.utils.html import format_html
 from .models import Listing, ListingImage
 
 class ListingImageInline(admin.TabularInline):
     model = ListingImage
-    extra = 1
-    readonly_fields = ['preview']
-    fields = ['image_url', 'thumbnail_url', 'is_primary', 'preview']
-
-    def preview(self, obj):
-        if obj.image_url:
-            return format_html('<img src="{}" style="width: 100px; height: auto; border-radius: 5px;" />', obj.image_url)
-        return "No Image"
+    extra = 1 # Allows adding one image directly from the Listing page
 
 @admin.register(Listing)
 class ListingAdmin(admin.ModelAdmin):
-    # 1. Quick View List
-    list_display = ['title', 'landlord', 'price', 'offer_type', 'property_type', 'is_active', 'is_boosted', 'created_at']
-    list_filter = ['offer_type', 'property_type', 'is_active', 'is_boosted', 'region', 'township']
-    search_fields = ['title', 'landlord__username', 'township', 'contact_phone']
-    list_editable = ['is_active', 'is_boosted'] # Quick toggle from the list view
+    # Columns shown in the main list view
+    list_display = (
+        'title', 
+        'property_type', 
+        'offer_type', 
+        'township', 
+        'price', 
+        'is_active', 
+        'is_boosted', 
+        'created_at'
+    )
     
-    # 2. Add the Image Inline
-    inlines = [ListingImageInline]
-
-    # 3. Organized Edit Form
+    # Filters available in the right sidebar
+    list_filter = (
+        'offer_type', 
+        'property_type', 
+        'is_active', 
+        'is_boosted', 
+        'is_premium', 
+        'region'
+    )
+    
+    # Fields searchable in the admin search bar
+    search_fields = (
+        'title', 
+        'township', 
+        'contact_phone', 
+        'contact_phone1', 
+        'contact_phone2', 
+        'remark'
+    )
+    
+    # Organized layout for editing a Listing
     fieldsets = (
-        ('Ownership', {
-            'fields': ('landlord', 'owner_direct')
+        ('Ownership & Core Type', {
+            'fields': ('landlord', 'title', 'offer_type', 'property_type', 'is_presale')
         }),
-        ('Core Details', {
-            'fields': (('title', 'property_type', 'offer_type'), 'price', 'remark')
+        ('Pricing & Payment', {
+            'fields': ('price', 'price_negotiable', 'installment_available', 'bank_transfer_accepted', 'payment_details')
         }),
-        ('Dimensions', {
-            'fields': (('width', 'length'), 'area_dimension_text')
-        }),
-        ('Location', {
+        ('Location Details', {
             'fields': ('region', 'township', 'quarter', 'road', 'landmarks', ('latitude', 'longitude'))
         }),
-        ('Status & Logistics', {
-            'fields': (('is_active', 'is_completed'), ('is_boosted', 'is_premium'), 'expiry_date')
+        ('Dimensions & Structure', {
+            'fields': (('width', 'length', 'area_dimension_text'), 'floor_data', 'room_structure', 'features', 'type_of_land')
         }),
-        ('Monetization & Contact', {
-            'classes': ('collapse',), # Hide by default to save space
-            'fields': ('active_buttons', 'contact_phone', 'viber_contact', 'telegram_username', 'whatsapp_number')
+        ('Contact Information', {
+            'description': 'Main and secondary contact details for the landlord/agent.',
+            'fields': (
+                'contact_phone', 
+                'contact_phone1', 
+                'contact_phone2', 
+                'viber_contact', 
+                'telegram_username', 
+                'whatsapp_number', 
+                'active_buttons'
+            )
         }),
-        ('Advanced Metadata', {
-            'classes': ('collapse',),
-            'fields': ('features', 'payment_details', 'is_installment_available', 'is_presale')
+        ('Status & Visibility', {
+            'classes': ('collapse',), # Hide this section by default for a cleaner look
+            'fields': ('is_active', 'is_boosted', 'is_premium', 'is_completed', 'is_deleted', 'expiry_date')
         }),
     )
+    
+    readonly_fields = ('area_dimension_text', 'created_at', 'updated_at')
+    inlines = [ListingImageInline]
 
-    readonly_fields = ['area_dimension_text', 'created_at', 'updated_at']
-
-    # Custom styling for JSONFields can be added here later using custom widgets
+@admin.register(ListingImage)
+class ListingImageAdmin(admin.ModelAdmin):
+    list_display = ('listing', 'is_primary', 'created_at')
+    list_filter = ('is_primary',)

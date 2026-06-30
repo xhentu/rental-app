@@ -6,4 +6,5 @@ db.sqlite3
 .env
 serviceAccountKey.json
 .python-version
+error.html
 EOF

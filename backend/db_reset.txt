@@ -1,0 +1,26 @@
+🛠️ The "Clean Slate" Runbook
+Phase 1: Database Reset (The Database Layer)
+
+    Stop active connections: Close your Django server (Ctrl+C) and any database GUI tools.  
+
+    Drop the Database: Run dropdb rental_db. If it fails due to permissions, use sudo -u postgres dropdb rental_db.  
+
+    Recreate the Database: Run createdb rental_db.
+
+    Fix Permissions (Critical for Postgres 15+):
+
+        Enter the shell: sudo -u postgres psql -d rental_db.  
+
+        Run: GRANT ALL ON SCHEMA public TO xhentu; (Replace xhentu with your user).  
+
+        Exit: \q.
+
+Phase 2: Migration Purge (The Django Layer)
+
+    Delete App Migrations: Navigate to each app folder (e.g., listing/migrations/ and users/migrations/).  
+
+    Clear the files: Delete all .py files except __init__.py.  
+
+        Command: rm [0-9]*.py inside the migrations folder.
+
+    Why? This removes the "memory" of the old schema, allowing Django to see your new is_deleted and large price fields as the "Initial" state.

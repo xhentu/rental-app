@@ -1,78 +1,47 @@
+# listings/serializers.py
 from rest_framework import serializers
-from django.utils import timezone
 from .models import Listing, ListingImage
-from users.serializers import UserPublicSerializer
 
 class ListingImageSerializer(serializers.ModelSerializer):
-    """
-    Used for full-quality image delivery in Detail screens.
-    """
     class Meta:
         model = ListingImage
         fields = ['id', 'image_url', 'thumbnail_url', 'is_primary']
 
+# 1. LIGHTWEIGHT FEED SERIALIZER (Optimized for fast scrolling)
 class ListingFeedSerializer(serializers.ModelSerializer):
-    """
-    Facebook-style Feed Serializer.
-    Optimized for speed: Small JSON, Small Images.
-    """
-    landlord = UserPublicSerializer(read_only=True)
-    # Only providing the primary thumbnail to save bandwidth
-    cover_thumbnail = serializers.SerializerMethodField()
-    
+    # Only pull the primary image thumbnail for the feed card
+    cover_image = serializers.SerializerMethodField()
+    property_type_display = serializers.CharField(source='get_property_type_display', read_only=True)
+    offer_type_display = serializers.CharField(source='get_offer_type_display', read_only=True)
+
     class Meta:
         model = Listing
         fields = [
-            'id', 'title', 'price', 'offer_type', 'property_type', 
-            'township', 'area_dimension_text', 'cover_thumbnail', 
-            'landlord', 'is_boosted', 'owner_direct', 'created_at'
+            'id', 'title', 'price', 'offer_type', 'offer_type_display',
+            'property_type', 'property_type_display', 'region', 'township', 
+            'cover_image', 'is_boosted', 'is_premium', 'created_at'
         ]
 
-    def get_cover_thumbnail(self, obj):
-        # We fetch only the thumbnail created by Celery/Redis
-        image = obj.images.filter(is_primary=True).first()
-        if image:
-            return image.thumbnail_url or image.image_url # Fallback if celery hasn't finished
+    def get_cover_image(self, obj):
+        # Grab the primary cover image or fallback to the first image
+        primary_img = obj.images.filter(is_primary=True).first() or obj.images.first()
+        if primary_img:
+            return primary_img.thumbnail_url or primary_img.image_url
         return None
 
+# 2. HEAVY DETAIL SERIALIZER (Pull everything for the dedicated property page)
 class ListingDetailSerializer(serializers.ModelSerializer):
-    """
-    Full Detail Serializer.
-    Includes all features, landmarks, and contact masking logic.
-    """
-    landlord = UserPublicSerializer(read_only=True)
     images = ListingImageSerializer(many=True, read_only=True)
-    days_left = serializers.SerializerMethodField()
+    property_type_display = serializers.CharField(source='get_property_type_display', read_only=True)
+    offer_type_display = serializers.CharField(source='get_offer_type_display', read_only=True)
+    hostel_type_display = serializers.CharField(source='get_hostel_type_display', read_only=True)
+    all_contact_numbers = serializers.SerializerMethodField()
 
     class Meta:
         model = Listing
         fields = '__all__'
-        read_only_fields = ['landlord', 'area_dimension_text', 'expiry_date']
+        read_only_fields = ['landlord', 'area_dimension_text', 'is_active', 'expiry_date', 'created_at', 'updated_at']
 
-    def get_days_left(self, obj):
-        if obj.expiry_date:
-            remaining = obj.expiry_date - timezone.now()
-            return max(0, remaining.days)
-        return 0
-
-    def to_representation(self, instance):
-        """
-        Monetization Logic: Protects contact info based on 'active_buttons' JSON.
-        """
-        rep = super().to_representation(instance)
-        buttons = instance.active_buttons or {}
-
-        # If button is False/Missing, mask the data
-        if not buttons.get('call'):
-            rep['contact_phone'] = "Contact hidden"
-        
-        if not buttons.get('viber'):
-            rep['viber_contact'] = None
-            
-        if not buttons.get('telegram'):
-            rep['telegram_username'] = None
-            
-        if not buttons.get('whatsapp'):
-            rep['whatsapp_number'] = None
-
-        return rep
+    def get_all_contact_numbers(self, obj):
+        numbers = [obj.contact_phone, obj.contact_phone1, obj.contact_phone2]
+        return [n for n in numbers if n and n.strip()]

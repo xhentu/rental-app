@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.postgres',
     'rest_framework',
+    'django_filters',
     'django_celery_results',
     'django_celery_beat',
     
@@ -108,6 +109,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication', # For Browser UI
 
     ],
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
 }
 
 AUTHENTICATION_BACKENDS = [
@@ -180,7 +184,12 @@ from celery.schedules import crontab
 CELERY_BEAT_SCHEDULE = {
     'deactivate-listings-at-midnight': {
         'task': 'listings.tasks.auto_deactivate_expired_listings',
-        'schedule': crontab(hour=0, minute=0), # Runs at 00:00 every day
+        'schedule': crontab(hour=0, minute=0), 
+    },
+    # 🌟 NEW UPGRADE: Rebuilds the front page mix cache seamlessly out-of-cycle
+    'refresh-public-feed-cache-periodic': {
+        'task': 'listings.tasks.update_public_feed_cache',
+        'schedule': crontab(minute=0),  # Runs exactly at the top of every hour (e.g., 1:00, 2:00)
     },
 }
 
