@@ -9,7 +9,7 @@ class Listing(models.Model):
     landlord = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='listings')
 
     # --- 1. Offer & Property Type ---
-    OFFER_CHOICES = [('sale', 'For Sale'), ('rent', 'For Rent')]
+    OFFER_CHOICES = [('sale', 'For Sale'), ('rent', 'For Rent'), ('buy', 'Want to Buy'), ('tenant', 'Want to Rent')]
     offer_type = models.CharField(max_length=10, choices=OFFER_CHOICES, db_index=True)
     
     CATEGORY_CHOICES = [

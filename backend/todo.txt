@@ -5,3 +5,44 @@ To be 100% "Enterprise" ready, you'd eventually add these (but not now):
     Rate Limiting: Using Django Rest Framework to prevent someone from hitting your /login/ endpoint 10,000 times a minute.
 
     Permissions: Ensuring only the owner of a listing can edit it (which we will do in the Listings app).
+
+    adb -s 7be71930 reverse tcp:8000 tcp:8000
+
+ok, lets go with this, i got some information we wanna add, we need to think and process into models for 
+database schema. some should be new columns, and some should be new json fields, and some should go for existing
+json data field. first its house case,
+land area - need to fix
+building type - need to add or maybe sub-type json
+compound and yard - need to add - maybe split interior and exterior
+residential only/ office allowed - into features in front end point
+staff/auxillary rooms allowed - into features in front end
+pet and garden policy - into basic info section - maybe front end addition to basic info section
+heavy utilites/electricity/air-corn/inverter/solar/generator/land_type/grant_validity/year_built - maybe
+ additional info seciton?
+second this is for shop/condo/apartment/office case
+parking - we should do something about it, i think we just need maybe just 'parking: available' or some detail info
+contract least term - yup, this is useful information too, we need to think how should we process with that information
+property management company/security - its whether some property management or security are handled by a company or something, 
+whatever its also information
+elevator status-? maybe into features?
+layout type/ flooring type/balcony and security grills/ water source/own water metor/ overhead water tank -
+those are required information for condo, apartments maybe for most of the residential buildings except for land haha
+so we need to figure out how to put those information
+BCC, contract chain, owner's grant - for buying case yup that's a need too. right?
+commercial potential - yup, for ground floors of apartments thats also a good information, we can put it into
+json fields from front end
+inside mall/shopping center/residential inner street - yup that's too a good information for shop type properties
+for shops, we also need to consider types, like beauty salon?restraunt?clothing?
+for offices, places are to consider like inside towers? mict park? commercial? plaza? residential house villa office?
+shop house? condo units offices?
+for offices, we need to add officer rooms, meeting rooms, staff operating rooms/ dining rooms/ it rooms/server rooms
+yup those kind of information can be put into special features.
+for hostle dormitory or whatever - target occupants like students only? male female exists in hostel type, maybe
+we add those into this or make a new fields, office staffs? company hostel or dormitory?
+for hostle, room type/single/double/dormitory/bunk beds, can we put beds, cupboard, tables, chairs, lockers?
+for hostle, how about bath rooms? toilets?
+for hostle, cooking allowed? is there washing machine? wifi? generator? water heater? yup those are special features
+maybe we put special features json fields for each one of property types.
+for hostle, dormitory open time? close time?
+for hostle, is there caretaker? warden? head occupants for dormitory? security? cctv?/key card?/ finger print?
+for hostle, how about electricity usage? wifi usage? can we accept or meet guest in living rooms or in their rooms?

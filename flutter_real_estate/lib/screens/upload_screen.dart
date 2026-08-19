@@ -28,6 +28,7 @@ class _UploadScreenState extends State<UploadScreen> {
   String _floorType = 'ground';
   String? _selectedDirection;
   String? _selectedLandType;
+  String? _selectedHostelGender;
 
   // --- Flags & Option Checkboxes ---
   bool _isOwnerDirect = false;
@@ -287,13 +288,29 @@ extension _UploadScreenSteps on _UploadScreenState {
   // --- STEP 3 PAGE: Verification Checkbox list, Photos & Contact Handles ---
   Widget _buildStep3MediaAndContact() {
     bool isLand = (_propertyType == 'land' || _propertyType == 'warehouse' || _propertyType == 'industrial_zone');
+    bool isHostel = (_propertyType == 'hostel');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (!isLand) ...[
+          // အဆောင် (Hostel) အတွက် Gender ရွေးချယ်စရာ Dropdown UI
+          if (isHostel) ...[
+            _buildCardContainer([
+              _buildSectionHeader("အဆောင်အမျိုးအစား သတ်မှတ်ရန်", Icons.people_outline),
+              const SizedBox(height: 12),
+              _buildDropdownOutline(
+                "တည်းခိုခွင့်ပြုသည့် အမျိုးအစား", 
+                _selectedHostelGender, 
+                ['Male', 'Female', 'Both', 'Family'], 
+                (v) => setState(() => _selectedHostelGender = v)
+              ),
+            ]),
+            const SizedBox(height: 16),
+          ],
+
+          if (!isLand && !isHostel) ...[ 
             _buildCardContainer([
               _buildSectionHeader("ပါ၀င်သော အခန်းဖွဲ့စည်းမှုများ", Icons.living_outlined),
               const SizedBox(height: 12),
@@ -308,6 +325,7 @@ extension _UploadScreenSteps on _UploadScreenState {
             ]),
             const SizedBox(height: 16),
           ],
+          
           _buildCardContainer([
             _buildSectionHeader("ဆက်သွယ်ရန် ဖုန်းနံပါတ်များ", Icons.contact_phone_outlined),
             const SizedBox(height: 12),
@@ -376,9 +394,16 @@ extension _UploadScreenComponentsUX on _UploadScreenState {
 
   Widget _buildPropertyTypeWrap() {
     final types = {
-      'house': 'အိမ်', 'condo': 'ကွန်ဒို', 'apartment': 'တိုက်ခန်း',
-      'shop_office': 'ဆိုင်/ရုံးခန်း', 'hostel': 'အဆောင်', 'industrial_zone': 'စက်မှုဇုန်',
-      'warehouse': 'ဂိုဒေါင်', 'land': 'ခြံ/မြေ', 'other': 'အခြား'
+      'house': 'အိမ်', 
+      'condo': 'ကွန်ဒို', 
+      'apartment': 'တိုက်ခန်း',
+      'shop': 'ဆိုင်',          
+      'office': 'ရုံးခန်း',      
+      'hostel': 'အဆောင်', 
+      'industrial': 'စက်မှုဇုန်', 
+      'warehouse': 'ဂိုဒေါင်', 
+      'land': 'ခြံ/မြေ', 
+      'other': 'အခြား'
     };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -555,10 +580,61 @@ extension _UploadScreenComponentsUX on _UploadScreenState {
 // =========================================================================
 
 extension _UploadScreenSubmit on _UploadScreenState {
+  
+  /// 🧹 ဖောင်အောင်မြင်စွာ တင်ပြီးချိန်တွင် အချက်အလက်များအားလုံးကို မူလအခြေအနေအတိုင်း Clear/Reset လုပ်ပေးရန်
+  void _clearFormAllData() {
+    // Controllers အားလုံးကို ရှင်းလင်းခြင်း
+    _titleController.clear();
+    _otherTypeController.clear();
+    _lengthController.clear();
+    _widthController.clear();
+    _areaController.clear();
+    _landLengthController.clear();
+    _landWidthController.clear();
+    _landAreaController.clear();
+    _floorNumController.clear();
+    _priceController.clear();
+    _storeyTypeController.clear();
+    _wardController.clear();
+    _streetController.clear();
+    _nearbyController.clear();
+    _masterBedController.clear();
+    _singleBedController.clear();
+    _wcController.clear();
+    _phone1Controller.clear();
+    _phone2Controller.clear();
+    _descriptionController.clear();
+
+    // Reactive Dropdowns နှင့် Checkboxes များကို Default ပြန်ပြောင်းခြင်း
+    setState(() {
+      _selectedImages.clear();
+      _currentStep = 0;
+      _propertyType = 'house';
+      _transactionType = 'sale';
+      _selectedState = null;
+      _selectedTownship = null;
+      _currentTownships = [];
+      _floorType = 'ground';
+      _selectedDirection = null;
+      _selectedLandType = null;
+      _selectedHostelGender = null;
+      
+      _isOwnerDirect = false;
+      _isDecorated = false;
+      _isNegotiable = false;
+      _isPreSale = false; 
+      _isBankTransfer = false; 
+      _viberPhone1 = false;
+      _viberPhone2 = false;
+    });
+
+    // PageView Wizard ကို အဆင့် (၁) ဆီသို့ ပြန်ရွှေ့ခြင်း
+    _pageController.jumpToPage(0);
+  }
+
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       
-      // 1. Firebase Auth ထံမှ လက်ရှိ User ရှိမရှိ အရင်စစ်ဆေးပြီး Token ဆွဲထုတ်ပါ
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -567,44 +643,47 @@ extension _UploadScreenSubmit on _UploadScreenState {
             backgroundColor: Colors.orange
           ),
         );
-        return; // အကောင့်မရှိရင် ဆက်သွားခွင့်မပြုပါ
+        return;
       }
 
-      // ပြောင်းလဲမှုများကို စောင့်ဆိုင်းရန် UI တွင် Loading ပြထားပါမည်
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => const Center(child: CircularProgressIndicator()),
       );
 
-      // Token ကို Expired မဖြစ်စေရန် Force Refresh (true) လုပ်ပြီး ဆွဲထုတ်ယူပါတယ်
       String? firebaseToken = await user.getIdToken(true);
 
-      // 2. ဒေတာများကို Django Payload Schema အတိုင်း စုစည်းခြင်း
+      String cleanPropertyType = _propertyType;
+      if (_propertyType == 'shop_office') cleanPropertyType = 'shop'; 
+      if (_propertyType == 'industrial_zone') cleanPropertyType = 'industrial'; 
+
       final packedPayload = {
-        "title": _titleController.text,
+        "title": _titleController.text.trim(),
         "offer_type": _transactionType, 
-        "property_type": _propertyType == 'other' ? _otherTypeController.text : _propertyType,
-        "price": _priceController.text,
+        "property_type": cleanPropertyType == 'other' ? _otherTypeController.text.trim() : cleanPropertyType,
+        "price": double.tryParse(_priceController.text) ?? 0.0, 
         
         "region": _selectedState ?? '',
         "township": _selectedTownship ?? '',
-        "quarter": _wardController.text,
-        "road": _streetController.text,
-        "landmarks": _nearbyController.text.isNotEmpty ? [_nearbyController.text] : [],
+        "quarter": _wardController.text.trim(),
+        "road": _streetController.text.trim(),
+        "landmarks": _nearbyController.text.isNotEmpty ? [_nearbyController.text.trim()] : [],
 
-        "width": _widthController.text.isEmpty ? "0" : _widthController.text,
-        "length": _lengthController.text.isEmpty ? "0" : _lengthController.text,
+        "width": double.tryParse(_widthController.text) ?? 0.0,
+        "length": double.tryParse(_lengthController.text) ?? 0.0,
+        
+        "hostel_type": _propertyType == 'hostel' ? _selectedHostelGender : null,
         "type_of_land": _selectedLandType ?? '',
-        "description": _descriptionController.text,
+        "remark": _descriptionController.text.trim(), 
 
         "owner_direct": _isOwnerDirect,
         "price_negotiable": _isNegotiable,
         "installment_available": _isPreSale,
         "bank_transfer_accepted": _isBankTransfer,
 
-        "contact_phone": _phone1Controller.text,
-        "contact_phone1": _phone2Controller.text,
+        "contact_phone": _phone1Controller.text.trim(),
+        "contact_phone1": _phone2Controller.text.isNotEmpty ? _phone2Controller.text.trim() : null, 
         
         "active_buttons": {
           "call": true,
@@ -629,30 +708,42 @@ extension _UploadScreenSubmit on _UploadScreenState {
         }
       };
 
-      // lib/screens/upload_screen.dart -> Inside _submitForm()
       print("📤 [FLUTTER OUTBOUND] Preparing to send payload...");
       print("📝 METADATA PACK: ${jsonEncode(packedPayload)}");
       print("🖼️ IMAGES COUNT: ${_selectedImages.length} images in byte queue");
 
-      // 3. ApiService သို့ Token အစစ်အမှန်ဖြင့် ပေးပို့ခြင်း
       bool success = await ApiService.uploadProperty(
         formData: packedPayload,
         images: _selectedImages,
-        authToken: firebaseToken ?? '', // 👈 Firebase Token စစ်စစ် ရောက်သွားပါပြီ
+        authToken: firebaseToken ?? '', 
       );
 
       if (!mounted) return;
-      Navigator.pop(context); // Loading Dialog ကို ပိတ်ပါ
+      Navigator.pop(context); // circular loader ကို ပိတ်ခြင်း
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("✅ အိမ်ခြံမြေစာရင်းကို အောင်မြင်စွာ တင်ပြီးပါပြီ။"), backgroundColor: Colors.green),
         );
+
+        // 🌟 အဆင့် ၁။ ရရှိလာတဲ့ ဓာတ်ပုံတွေကို Detail Screen မှာ သုံးဖို့ variable အသစ်ထဲ ခေတ္တခွဲသိမ်းပါတယ်
+        final imagesToPass = List<Uint8List>.from(_selectedImages);
+
+        // 🌟 အဆင့် ၂။ ဖောင်ထဲက ဒေတာတွေအကုန်လုံးကို အပြီးတိုင် Clear လုပ်ပစ်ပါတယ် (အနောက်မှာ ဝှက်ကျန်ခဲ့ရင်တောင် စာတွေ အကုန်ပြောင်သွားစေရန်)
+        _clearFormAllData();
+
+        // 🌟 အဆင့် ၃။ Detail Screen ဆီသို့ ပို့ဆောင်ပြီး Back Key နှိပ်ပါက Home (အောက်ဆုံး စာမျက်နှာ) သို့သာ ရောက်ရှိစေရန် Stack ကို ရှင်းထုတ်ခြင်း
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => PropertyDetailScreen(propertyData: packedPayload, images: _selectedImages)), // သို့မဟုတ် မူလအတိုင်း Detail ပြချင်ရင်
-          (Route<dynamic> route) => route.isFirst, // ပထမဆုံး Main Screen သို့မဟုတ် Home Screen တစ်ခုပဲ Stack မှာ ကျန်ခဲ့စေရန်
-        ); // Form Wizard Screen မှ ထွက်ပြီး ရှေ့ Screen သို့ ပြန်သွားပါမည်
+          MaterialPageRoute(
+            builder: (context) => PropertyDetailScreen(
+              propertyData: packedPayload, 
+              images: imagesToPass,
+            ),
+          ), 
+          (Route<dynamic> route) => route.isFirst, 
+        ); 
       } else {
+        // ❌ ဒေတာပေးပို့မှု မအောင်မြင်ပါက ဖြည့်လက်စ ဖောင်အချက်အလက်များကို ဘာမှမလုပ်ဘဲ ဒီအတိုင်း ချန်ထားပေးမည်
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("❌ ဆာဗာသို့ ဒေတာပေးပို့ခြင်း မအောင်မြင်ပါ။ ပြန်ကြိုးစားကြည့်ပါ။"), backgroundColor: Colors.red),
         );
