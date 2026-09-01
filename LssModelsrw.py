@@ -271,6 +271,124 @@ class Listing(models.Model):
             GinIndex(fields=['landmarks'], name='idx_landmarks_gin'),
         ]
 
+    # ==========================================
+    # SECTOR 3: LAND CASE
+    # ==========================================
+    class LandTypeChoices(models.IntegerChoices):
+        GRANT = 1, 'Grant Land'             # ဂရန်မြေ
+        FREEHOLD = 2, 'Ancestral/Freehold'  # ဘိုးဘွားပိုင်မြေ
+        PERMIT = 3, 'Permit Land'           # ပါမစ်မြေ
+        LICENSE = 4, 'License Land'         # လိုင်စင်မြေ
+        SLIP = 5, 'Slip Land'               # စလစ်မြေ
+        GRANT_APPLIED = 6, 'Grant Applied'  # ဂရန်လျှောက်ထားဆဲ
+        VILLAGE = 7, 'Village Land'         # ရွာမြေ
+        OTHER = 99, 'Other'                 # အခြား
+
+    # --- Essential Land SQL Columns ---
+    land_type = models.PositiveSmallIntegerField(
+        choices=LandTypeChoices.choices, null=True, blank=True, db_index=True,
+        help_text="1: Grant, 2: Freehold, 3: Permit, 4: License, 5: Slip, 6: Grant Applied, 7: Village, 99: Other"
+    )
+
+    # Land Plot Dimensions (in feet)
+    land_width = models.PositiveSmallIntegerField(null=True, blank=True)
+    land_length = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    # Total Plot Area in Sq Ft for fast B-Tree range queries
+    land_area = models.PositiveIntegerField(
+        null=True, blank=True, db_index=True,
+    )
+
+    # --- JSONB Bucket (Extra/Niche Land Attributes) ---
+    # Example: {"shape": "rectangular", "corner_plot": true, "road_width_ft": 20, "has_garden": true}
+    land_features = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        indexes = [
+            GinIndex(fields=['land_features'], name='idx_land_features_gin'),
+        ]
+    
+    # ==========================================
+    # SECTOR 4: BUILDING CASE
+    # ==========================================
+    class FacingChoices(models.IntegerChoices):
+        NORTH = 1, 'North'
+        SOUTH = 2, 'South'
+        EAST = 3, 'East'
+        WEST = 4, 'West'
+        NORTH_EAST = 5, 'North-East'
+        NORTH_WEST = 6, 'North-West'
+        SOUTH_EAST = 7, 'South-East'
+        SOUTH_WEST = 8, 'South-West'
+
+    class FurnishingChoices(models.IntegerChoices):
+        UNFURNISHED = 1, 'Unfurnished'                 # မပြင်ဆင်ရသေး
+        SEMI_FURNISHED = 2, 'Semi-Furnished'           # အသင့်အတင့် ပြင်ဆင်ပြီး
+        FULLY_FURNISHED = 3, 'Fully Furnished'         # အပြည့်အဝ ပြင်ဆင်ပြီး
+        HALL = 4, 'Hall / Bare Shell'                  # ဟောခန်း
+        UNDER_CONSTRUCTION = 5, 'Under Construction'   # ဆောက်လုပ်ဆဲ
+
+    # --- Enums (Using help_text for documentation) ---
+    facing_direction = models.PositiveSmallIntegerField(
+        choices=FacingChoices.choices, null=True, blank=True, db_index=True,
+        help_text="Facing direction: 1=N, 2=S, 3=E, 4=W, 5=NE, 6=NW, 7=SE, 8=SW"
+    )
+    furnishing = models.PositiveSmallIntegerField(
+        choices=FurnishingChoices.choices, null=True, blank=True, db_index=True,
+        help_text="Completion status: 1=Unfurnished, 2=Semi, 3=Full, 4=Hall, 5=Under Construction"
+    )
+
+    # --- Building Dimensions & Heights ---
+    building_width = models.PositiveSmallIntegerField(null=True, blank=True)
+    building_length = models.PositiveSmallIntegerField(null=True, blank=True)
+    building_height = models.PositiveSmallIntegerField(null=True, blank=True)
+    building_area = models.PositiveIntegerField(null=True, blank=True, db_index=True)
+
+    # --- Vertical & Floor Data ---
+    total_floors = models.PositiveSmallIntegerField(
+        default=1, null=True, blank=True,
+        help_text="Total story count of the building structure"
+    )
+    floor_level = models.PositiveSmallIntegerField(
+        null=True, blank=True, db_index=True,
+        help_text="Specific unit level (0: Ground floor, 1: 1st floor, etc.)"
+    )
+
+    # --- Dynamic Room Structure (JSONB) ---
+    # Example payload:
+    # {
+    #   "master_bedroom": 2,
+    #   "single_bedroom": 3,
+    #   "bathroom": 2,
+    #   "living_room": 1,
+    #   "kitchen": 1,
+    #   "shrine_room": 1,
+    #   "dining_room": 1
+    # }
+    room_structure = models.JSONField(default=dict, blank=True)
+
+    # --- Industrial, Utility & Special Building Features (JSONB) ---
+    # Example payload:
+    # {
+    #   "construction_type": 1,     // 1: Steel Structure, 2: RC, 3: Brick
+    #   "has_lift": true,
+    #   "has_generator": true,
+    #   "has_3phase_power": true,   // Critical for industrial sites
+    #   "transformer_kva": 315,
+    #   "floor_load_capacity": 500, // kg/sqm
+    #   "water_supply": "tube_well"
+    # }
+    building_features = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        indexes = [
+            GinIndex(fields=['room_structure'], name='idx_room_structure_gin'),
+            GinIndex(fields=['building_features'], name='idx_bldg_features_gin'),
+        ]
+
+
+
+##########################################################
 
 class Region(models.Model):
     id = models.PositiveSmallIntegerField(primary_key=True)  # e.g., 1: Yangon, 2: Mandalay
